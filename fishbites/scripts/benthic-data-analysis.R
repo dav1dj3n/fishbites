@@ -35,7 +35,7 @@ p1 <- ggplot(filter_benthic_data, aes(x = percent_turf)) +
 # Histogram of percent_turb
 p2 <- ggplot(filter_benthic_data, aes(x = percent_turb)) +
   geom_histogram(binwidth = 5, fill = "#69B3A2", color = "black") +
-  labs(title = "Distribution of Turbidity Cover (%)",
+  labs(title = "Distribution of Turbinaria Cover (%)",
        x = "Percent Turbidity",
        y = "Count") +
   theme_classic()
@@ -43,7 +43,7 @@ p2 <- ggplot(filter_benthic_data, aes(x = percent_turb)) +
 # Scatter plot of percent_turf vs percent_turb
 p3 <- ggplot(filter_benthic_data, aes(x = percent_turf, y = percent_turb)) +
   geom_density_2d_filled(contour_var = "density") +
-  labs(title = "Turf vs. Turbidity Density",
+  labs(title = "Turf vs. Turbinaria Density",
        x = "Percent Turf",
        y = "Percent Turbidity") +
   theme_classic()
