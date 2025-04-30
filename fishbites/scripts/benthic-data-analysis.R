@@ -45,7 +45,7 @@ p3 <- ggplot(filter_benthic_data, aes(x = percent_turf, y = percent_turb)) +
   geom_density_2d_filled(contour_var = "density") +
   labs(title = "Turf vs. Turbinaria Density",
        x = "Percent Turf",
-       y = "Percent Turbidity") +
+       y = "Percent Turbinaria") +
   theme_classic()
 
 
