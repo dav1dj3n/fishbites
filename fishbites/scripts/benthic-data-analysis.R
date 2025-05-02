@@ -15,7 +15,7 @@ head(benthic_data)
 
 filter_benthic_data<-subset(benthic_data, Sum==25)
 filter_benthic_data$percent_turf<-filter_benthic_data$Turf/filter_benthic_data$Sum*100
-filter_benthic_data$percent_turb<-filter_benthic_data$Turb/filter_benthic_data$Sum*100
+filter_benthic_data$percent_turb<-(filter_benthic_data$Turb+filter_benthic_data$Other)/filter_benthic_data$Sum*100
 head(filter_benthic_data)
 #fix some of david's zeroes
 filter_benthic_data <- filter_benthic_data %>%
