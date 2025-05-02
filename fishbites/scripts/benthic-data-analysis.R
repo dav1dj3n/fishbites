@@ -13,9 +13,12 @@ sheet_url <- "https://docs.google.com/spreadsheets/d/1hRSyADWF6YhFdlJ-JwN13CSUPK
 benthic_data <- read_sheet(sheet_url)
 head(benthic_data)
 
-filter_benthic_data<-subset(benthic_data, Sum==25)
-filter_benthic_data$percent_turf<-filter_benthic_data$Turf/filter_benthic_data$Sum*100
-filter_benthic_data$percent_turb<-(filter_benthic_data$Turb+filter_benthic_data$Other)/filter_benthic_data$Sum*100
+filter_benthic_data <- filter_benthic_data %>%
+  filter(!is.na(Sarg))
+
+filter_benthic_data<-subset(filter_benthic_data, Sum==25)
+filter_benthic_data$percent_turf<-(filter_benthic_data$Turf+filter_benthic_data$CCA)/filter_benthic_data$Sum*100
+filter_benthic_data$percent_turb<-(filter_benthic_data$Turb+filter_benthic_data$Sarg)/filter_benthic_data$Sum*100
 head(filter_benthic_data)
 #fix some of david's zeroes
 filter_benthic_data <- filter_benthic_data %>%
@@ -44,6 +47,13 @@ p2 <- ggplot(filter_benthic_data, aes(x = percent_turb)) +
 p3 <- ggplot(filter_benthic_data, aes(x = percent_turf, y = percent_turb)) +
   geom_density_2d_filled(contour_var = "density") +
   labs(title = "Turf vs. Turbinaria Density",
+       x = "Percent Turf",
+       y = "Percent Turbinaria") +
+  theme_classic()
+
+ggplot(filter_benthic_data, aes(x = percent_turf, y = percent_turb)) +
+  geom_point(alpha = 0.6, size = 2) +
+  labs(title = "Turf vs. Turbinaria Cover",
        x = "Percent Turf",
        y = "Percent Turbinaria") +
   theme_classic()
