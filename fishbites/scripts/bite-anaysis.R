@@ -11,10 +11,30 @@ sheet_url <- "https://docs.google.com/spreadsheets/d/1uQtkEVd-T6L_D8-luRIB81lh5z
 bites <- read_sheet(sheet_url)
 head(bites)
 
-unique(bites$Species)
-
 bites <- bites %>%
   filter(!is.na(Species))
+bites <- bites %>%
+  filter(Replicate!=7)
+
+corrections <- c(
+  # standardize generic juveniles
+  "Juvenile parrotfish"      = "Juvenile Parrotfish",
+  "Juvenile wrasse"          = "Juvenile Wrasse",
+  "mystery wrasse"           = "Mystery Wrasse",
+  # fix Stethojulis spelling variants
+  "Stethojulis bandanesis"   = "Stethojulis bandanensis",
+  "Stethojulius bandanensis" = "Stethojulis bandanensis",
+  # fix Ostracion spelling
+  "Ostracion melagris"        = "Ostracion meleagris",
+  "Juvenile thalassoma" = "Thalassoma hardwicke"
+)
+
+# 7. Apply corrections back to your data
+bites_clean <- bites %>%
+  mutate(Species = recode(Species, !!!corrections))
+
+
+unique(bites$Species)
 
 bites_summary <- bites %>%
   group_by(Replicate, Treatment, Species) %>%
