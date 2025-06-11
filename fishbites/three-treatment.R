@@ -153,13 +153,13 @@ loadings_filtered <- as.data.frame(pca_filtered$rotation) %>%
 
 # STEP 7: Plot PCA
 ggplot(pca_df_filtered, aes(x = PC1, y = PC2, color = Treatment)) +
-  geom_point(size = 3) +
+  geom_point(size = 3, alpha=0.7) +
   stat_ellipse(type = "norm", linetype = "dashed") +
   # Uncomment to add loadings:
-  # geom_segment(data = loadings_filtered, aes(x = 0, y = 0, xend = PC1, yend = PC2),
-  #              arrow = arrow(length = unit(0.2, "cm")), color = "black") +
-  # geom_text(data = loadings_filtered, aes(x = PC1, y = PC2, label = Species),
-  #           color = "black", size = 3, hjust = 0.5, vjust = -0.5) +
+  geom_segment(data = loadings_filtered, aes(x = 0, y = 0, xend = PC1, yend = PC2),
+                arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  geom_text(data = loadings_filtered, aes(x = PC1, y = PC2, label = Species),
+             color = "black", size = 3, hjust = 0.5, vjust = -0.5) +
   theme_classic() +
   labs(
     title = "PCA of Fish Community Composition (Rare Species Removed)",
