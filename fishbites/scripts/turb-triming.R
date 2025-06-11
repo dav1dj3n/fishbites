@@ -12,19 +12,22 @@ sheet_url <- "https://docs.google.com/spreadsheets/d/1J29FZPk6blnLTn8GVwNePCZDFB
 # Read the first sheet (or specify by name or position)
 data <- read_sheet(sheet_url)
 head(data)
-data_bites<-data  %>% filter (Bites>0)
+data <- data %>%
+  filter(!is.na(Bites) & Bites > 0)
 
 
+table(data$trim, data$Replicate)
 # Example start times for each replicate (just time, no date)
 video_starts <- tibble(
-  Replicate = 1:4,
-  start_time = hms::as_hms(c("09:11:00", "09:40:00", "09:38:00", "09:26:00"))
-)
+  Replicate = 1:8,
+  start_time = hms::as_hms(c("09:13:00", "09:28:00", "09:34:00", "09:36:00", 
+                             "09:39:00", "09:39:00", "09:39:00", "09:41:00")))
+
 
 
 
 # Step 1: Convert timevi to POSIXct or numeric
-data_bites <- data_bites %>%
+data_bites <- data %>%
   mutate(timevi_hms = hms::as_hms(timevi))
 
 # Join start times by replicate
@@ -77,4 +80,78 @@ ggplot(visits_raw, aes(x = elapsed_time_min, y = Species, fill = Species)) +
   labs(y = "Species", title = "Smoothed Visitation Over Time by Species") +
   theme_classic() +
   theme(legend.position = "none")
+
+
+
+# ---- 2. try something new ----
+
+# Load required libraries
+library(dplyr)
+library(ggplot2)
+library(lme4)
+
+# Step 1: Create 10-minute time bins for elapsed_time_min
+visits_binned <- visits_raw %>%
+  mutate(
+    time_bin = cut(
+      elapsed_time_min,
+      breaks = seq(0, max(elapsed_time_min, na.rm = TRUE) + 10, by = 10),
+      right = FALSE,          # Intervals like [0,10), [10,20), ...
+      labels = FALSE          # Label bins as integers 1, 2, 3, ...
+    )
+  )
+
+# Step 2: Calculate average Bites by Species and time_bin
+avg_bites <- visits_binned %>%
+  group_by(Species, time_bin) %>%
+  summarize(
+    mean_bites = mean(Bites, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Step 3: Plot heatmap of mean bites over time bins for each species
+ggplot(avg_bites, aes(x = time_bin, y = Species, fill = mean_bites)) +
+  geom_tile(color = "gray80") +                       # Tiles colored by mean bites
+  scale_fill_viridis_c(option = "magma", na.value = "white") + # Nice color scale
+  labs(
+    x = "Elapsed Time (10-minute bins)",
+    y = "Species",
+    fill = "Mean Bites"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))       # Rotate x-axis labels
+
+# Step 4: Fit mixed-effects regression model to examine effect of elapsed time on Bites
+# Make sure 'Replicate' is a factor for random effects
+visits_raw <- visits_raw %>%
+  mutate(Replicate = factor(Replicate))
+
+
+
+species_counts <- visits_raw %>%
+  group_by(Species) %>%
+  summarise(n_obs = n()) %>%
+  filter(n_obs >= 10)  # choose threshold
+
+filtered_data <- visits_raw %>%
+  filter(Species %in% species_counts$Species)
+
+library(lmerTest)
+
+model_no_time <- lmer(Bites ~ Species + (1 | Replicate), data = filtered_data, REML = FALSE)
+model_with_time <- lmer(Bites ~ elapsed_time_min + Species + (1 | Replicate), data = filtered_data, REML = FALSE)
+
+anova(model_no_time, model_with_time)
+
+
+anova(model_reduced, model_full)
+
+
+
+# Optional: Model with species-specific time slopes
+model_species_slope <- lmer(Bites ~ elapsed_time_min + (elapsed_time_min | Species) + (1 | Replicate), data = visits_raw)
+summary(model_species_slope)
+
+
+
 
