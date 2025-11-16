@@ -1,0 +1,50 @@
+library(googlesheets4)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(vegan)
+
+
+bites <- read.csv("fishbitenew.csv")
+bites <- bites %>%
+  mutate(
+    totaltimehr = {
+      minutes <- floor(totaltime / 100)
+      seconds <- totaltime %% 100
+      # Normalize seconds > 59
+      extra_minutes <- seconds %/% 60
+      seconds <- seconds %% 60
+      minutes <- minutes + extra_minutes
+      # Convert to hours
+      (minutes + seconds / 60) / 60
+    }
+  ) %>%
+  filter(!is.na(Species), Species != "", totaltimehr > 0)
+write.csv(bites, file = 'fishbitesnew11132025.csv', row.names = FALSE)
+turbremoval <- read.csv("Turbremovalclean.csv")
+
+turbremoval <- turbremoval %>%
+  mutate(
+    totaltimehr = {
+      minutes <- floor(totaltime / 100)
+      seconds <- totaltime %% 100
+      # Normalize seconds > 59
+      extra_minutes <- seconds %/% 60
+      seconds <- seconds %% 60
+      minutes <- minutes + extra_minutes
+      # Convert to hours
+      (minutes + seconds / 60) / 60
+    }
+  ) %>%
+  filter(!is.na(Species), Species != "", totaltimehr > 0) %>% 
+  mutate(Replicate = Replicate +28 ) %>%
+  mutate(id = 1006 + row_number()) %>%
+  mutate(Treatment = "Removal")
+
+write.csv(turbremoval, file = "turbremovalclean11132025.csv", row.names = FALSE)
+
+
+alltreatments111325 <- full_join(bites, turbremoval) %>%
+  select(id,	Date,	Replicate,	totaltime,	totaltimehr,	Video,	timestamp,	real_time,	Species,	Bites,	Treatment,	Notes)
+
+write.csv(alltreatments111325, file = "3treatments11132025.csv", row.names = FALSE)
